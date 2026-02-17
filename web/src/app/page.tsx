@@ -28,6 +28,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiProvider, setAiProvider] = useState<string>("none");
+  const [aiModel, setAiModel] = useState<string | null>(null);
   const [scopusEnabled, setScopusEnabled] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -39,6 +40,7 @@ export default function Home() {
           console.log("Health check response:", h);
           setAiEnabled(h.ai_enabled);
           setAiProvider(h.ai_provider || "none");
+          setAiModel(h.ollama_model || null);
           setScopusEnabled(h.scopus_enabled || false);
         })
         .catch((err) => {
@@ -49,6 +51,7 @@ export default function Home() {
               .then((h) => {
                 setAiEnabled(h.ai_enabled);
                 setAiProvider(h.ai_provider || "none");
+                setAiModel(h.ollama_model || null);
                 setScopusEnabled(h.scopus_enabled || false);
               })
               .catch((err2) => console.error("Health check retry failed:", err2));
@@ -132,7 +135,7 @@ export default function Home() {
             {aiEnabled && (
               <Badge variant="secondary" className="text-[10px] gap-1 hidden sm:flex">
                 <Sparkles className="h-3 w-3" />
-                AI: {aiProvider === "ollama" ? "Ollama (Local)" : "OpenAI"}
+                AI: {aiProvider === "ollama" ? (aiModel || "Llama") : "OpenAI"}
               </Badge>
             )}
             <Badge variant="outline" className="text-[10px] gap-1">
