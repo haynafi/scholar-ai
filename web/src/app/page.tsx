@@ -17,6 +17,7 @@ import {
   ChevronRight,
   FileText,
   Library,
+  Github,
 } from "lucide-react";
 
 export default function Home() {
@@ -308,7 +309,17 @@ export default function Home() {
             <GraduationCap className="h-3.5 w-3.5" />
             ScholarAI v2.0 - Powered by OpenAlex
           </div>
-          <div>100% verified papers. No hallucinations.</div>
+          <div className="flex items-center gap-3">
+            <span>100% verified papers. No hallucinations.</span>
+            <a
+              href="https://github.com/haynafi/scholar-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              <Github className="h-4 w-4" />
+            </a>
+          </div>
         </div>
       </footer>
     </div>
