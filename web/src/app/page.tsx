@@ -31,13 +31,29 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
-    checkHealth()
-      .then((h) => {
-        setAiEnabled(h.ai_enabled);
-        setAiProvider(h.ai_provider || "none");
-        setScopusEnabled(h.scopus_enabled || false);
-      })
-      .catch(() => {});
+    const fetchHealth = () => {
+      checkHealth()
+        .then((h) => {
+          console.log("Health check response:", h);
+          setAiEnabled(h.ai_enabled);
+          setAiProvider(h.ai_provider || "none");
+          setScopusEnabled(h.scopus_enabled || false);
+        })
+        .catch((err) => {
+          console.error("Health check failed:", err);
+          // Retry once after 3 seconds
+          setTimeout(() => {
+            checkHealth()
+              .then((h) => {
+                setAiEnabled(h.ai_enabled);
+                setAiProvider(h.ai_provider || "none");
+                setScopusEnabled(h.scopus_enabled || false);
+              })
+              .catch((err2) => console.error("Health check retry failed:", err2));
+          }, 3000);
+        });
+    };
+    fetchHealth();
   }, []);
 
   const handleSearch = async (params: Record<string, unknown>, page = 1) => {

@@ -54,6 +54,7 @@ export interface SearchParams {
 export interface HealthResponse {
   status: string;
   version: string;
+  environment: string;
   ai_enabled: boolean;
   ai_provider: string;
   ollama_available: boolean;
