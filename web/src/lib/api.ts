@@ -1,6 +1,10 @@
 import { SearchParams, SearchResponse, HealthResponse, Paper } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:9999";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:9999";
+const IS_BROWSER = typeof window !== "undefined";
+const IS_DEV = process.env.NODE_ENV === "development";
+// In dev, use Next.js proxy to avoid CORS; in prod, call backend directly
+const API_BASE = IS_BROWSER && IS_DEV ? "/api/proxy" : BACKEND_URL;
 
 export async function searchPapers(params: SearchParams): Promise<SearchResponse> {
   const query = new URLSearchParams();
@@ -70,20 +74,35 @@ export async function getBatchCitations(
   return res.json();
 }
 
-export function getExportUrl(params: {
+export async function exportToExcel(params: {
   topic: string;
   start_year?: number;
   end_year?: number;
   open_access_only?: boolean;
   min_citations?: number;
-}): string {
+}): Promise<void> {
   const query = new URLSearchParams();
   query.set("topic", params.topic);
   if (params.start_year) query.set("start_year", String(params.start_year));
   if (params.end_year) query.set("end_year", String(params.end_year));
   if (params.open_access_only) query.set("open_access_only", "true");
   if (params.min_citations) query.set("min_citations", String(params.min_citations));
-  return `${API_BASE}/export?${query.toString()}`;
+
+  const res = await fetch(`${API_BASE}/export?${query.toString()}`);
+  if (!res.ok) throw new Error("Export failed");
+
+  const blob = await res.blob();
+  const disposition = res.headers.get("Content-Disposition");
+  const filename = disposition?.match(/filename=(.+)/)?.[1] || `research_${params.topic.replace(/\s+/g, "_")}.xlsx`;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 export async function checkScopus(

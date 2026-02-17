@@ -35,9 +35,10 @@ interface SearchFiltersProps {
   }) => void;
   onExport: () => void;
   loading: boolean;
+  exporting?: boolean;
 }
 
-export function SearchFilters({ onSearch, onExport, loading }: SearchFiltersProps) {
+export function SearchFilters({ onSearch, onExport, loading, exporting }: SearchFiltersProps) {
   const [topic, setTopic] = useState("");
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
@@ -162,10 +163,14 @@ export function SearchFilters({ onSearch, onExport, loading }: SearchFiltersProp
           size="sm"
           className="h-8 text-xs gap-1.5"
           onClick={onExport}
-          disabled={!topic.trim()}
+          disabled={!topic.trim() || exporting}
         >
-          <Download className="h-3.5 w-3.5" />
-          <span className="hidden xs:inline">Export</span> Excel
+          {exporting ? (
+            <div className="h-3.5 w-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Download className="h-3.5 w-3.5" />
+          )}
+          {exporting ? "Exporting..." : "Excel"}
         </Button>
       </div>
 

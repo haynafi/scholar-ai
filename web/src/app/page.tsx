@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { SearchFilters } from "@/components/search-filters";
 import { PaperCard } from "@/components/paper-card";
-import { searchPapers, checkHealth, getExportUrl } from "@/lib/api";
+import { searchPapers, checkHealth, exportToExcel } from "@/lib/api";
 import { Paper, SearchResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ export default function Home() {
   const [aiProvider, setAiProvider] = useState<string>("none");
   const [scopusEnabled, setScopusEnabled] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const fetchHealth = () => {
@@ -86,16 +87,22 @@ export default function Home() {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!currentParams.topic) return;
-    const url = getExportUrl({
-      topic: currentParams.topic as string,
-      start_year: currentParams.start_year as number | undefined,
-      end_year: currentParams.end_year as number | undefined,
-      open_access_only: currentParams.open_access_only as boolean | undefined,
-      min_citations: currentParams.min_citations as number | undefined,
-    });
-    window.open(url, "_blank");
+    setExporting(true);
+    try {
+      await exportToExcel({
+        topic: currentParams.topic as string,
+        start_year: currentParams.start_year as number | undefined,
+        end_year: currentParams.end_year as number | undefined,
+        open_access_only: currentParams.open_access_only as boolean | undefined,
+        min_citations: currentParams.min_citations as number | undefined,
+      });
+    } catch {
+      setError("Excel export failed. Please try again.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -182,6 +189,7 @@ export default function Home() {
           onSearch={handleSearch}
           onExport={handleExport}
           loading={loading}
+          exporting={exporting}
         />
 
         {/* Error */}
@@ -225,7 +233,7 @@ export default function Home() {
 
         {/* Paper results */}
         {results && !loading && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-4">
             {results.results.map((paper: Paper, i: number) => (
               <PaperCard
                 key={paper.id || i}
@@ -306,11 +314,6 @@ export default function Home() {
       <footer className="border-t mt-8 sm:mt-16">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] sm:text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <GraduationCap className="h-3.5 w-3.5" />
-            ScholarAI v2.0 - Powered by OpenAlex
-          </div>
-          <div className="flex items-center gap-3">
-            <span>100% verified papers. No hallucinations.</span>
             <a
               href="https://github.com/haynafi/scholar-ai"
               target="_blank"
@@ -319,7 +322,10 @@ export default function Home() {
             >
               <Github className="h-4 w-4" />
             </a>
+            <GraduationCap className="h-3.5 w-3.5" />
+            ScholarAI v2.0 - Powered by OpenAlex
           </div>
+          
         </div>
       </footer>
     </div>

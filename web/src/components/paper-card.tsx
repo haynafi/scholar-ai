@@ -93,7 +93,7 @@ export function PaperCard({ paper, index, aiEnabled, scopusEnabled }: PaperCardP
     .join(", ");
 
   return (
-    <Card className="group transition-all duration-200 hover:shadow-md border-border/60">
+    <Card className="group transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 border-border/60">
       <CardContent className="p-3 sm:p-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -262,9 +262,23 @@ export function PaperCard({ paper, index, aiEnabled, scopusEnabled }: PaperCardP
         )}
         {aiSummary && !loadingSummary && (
           <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">AI Summary</span>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-primary">AI Summary</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                onClick={() => copyToClipboard(aiSummary)}
+              >
+                {copied ? (
+                  <><Check className="h-3 w-3" /> Copied</>
+                ) : (
+                  <><Copy className="h-3 w-3" /> Copy</>
+                )}
+              </Button>
             </div>
             <p className="text-sm leading-relaxed">{aiSummary}</p>
           </div>
