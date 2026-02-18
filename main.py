@@ -556,7 +556,10 @@ def summarize_paper(request: Request, body: dict):
     abstract = body.get("abstract", "")
 
     if not abstract or abstract == "No abstract available.":
-        raise HTTPException(status_code=400, detail="No abstract to summarize")
+        raise HTTPException(
+            status_code=400, 
+            detail="This paper doesn't have an abstract available, so we can't generate a summary. Try another paper!"
+        )
 
     prompt = (
         "You are a research assistant. Summarize this academic paper in 3-4 clear sentences. "
@@ -573,9 +576,20 @@ def summarize_paper(request: Request, body: dict):
             logger.info(f"Summarizing with OpenAI ({OPENAI_MODEL})")
             summary = summarize_with_openai(prompt)
         return {"summary": summary, "provider": provider}
+    except requests.Timeout:
+        logger.error(f"LLM timeout ({provider})")
+        raise HTTPException(
+            status_code=504, 
+            detail="AI is taking too long to respond. The model might be busy - please try again in a moment."
+        )
     except requests.RequestException as e:
         logger.error(f"LLM API error ({provider}): {e}")
-        raise HTTPException(status_code=502, detail=f"AI summary failed ({provider}): {str(e)}")
+        error_msg = "AI summary service is temporarily unavailable. "
+        if provider == "ollama":
+            error_msg += "Make sure Ollama is running on your system."
+        else:
+            error_msg += "Please check your API key and try again."
+        raise HTTPException(status_code=502, detail=error_msg)
 
 
 # ---------------------------
