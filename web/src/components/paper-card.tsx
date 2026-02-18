@@ -62,7 +62,7 @@ export function PaperCard({ paper, index, aiEnabled, scopusEnabled }: PaperCardP
       setAiSummary(res.summary);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to generate summary";
-      setAiSummary(`Error: ${message}`);
+      setAiSummary(message);
     } finally {
       setLoadingSummary(false);
     }
